@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Text;
 
 namespace AplicacionConsola
 {
@@ -39,7 +40,7 @@ namespace AplicacionConsola
             dtNames.Columns.Add("FirstName", typeof(string));
             dtNames.Columns.Add("LastName", typeof(string));
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 3; i++)
             {
 
                 DataRow drName = dtNames.NewRow();
@@ -53,18 +54,57 @@ namespace AplicacionConsola
 
             try
             {
-                ClsConexionSql conecctionTest = new ClsConexionSql();
+                ClsConexionSql conecctionTest;
+                SqlCommand insertCommand;
 
-                // Configure the SqlCommand and table-valued parameter.  
-                SqlCommand insertCommand = new SqlCommand("prInsertNames", conecctionTest.AbrirConexion());
+                conecctionTest = new ClsConexionSql();
+                insertCommand = new SqlCommand("prInsertNames", conecctionTest.AbrirConexion());
+
+
                 insertCommand.CommandType = CommandType.StoredProcedure;
                 SqlParameter tvpParam = insertCommand.Parameters.AddWithValue("@Names", dtNames);
                 tvpParam.SqlDbType = SqlDbType.Structured;
+                
+                /**/
+                SqlDataAdapter da = new SqlDataAdapter(insertCommand);
+                DataTable dt = new DataTable();
+
+                da.Fill(dt);
+                //Console.WriteLine(dt.ToString());
+                //foreach (DataRow dr in dt.Rows)
+                //{
+                //    foreach(DataColumn colum in dt.Columns)
+                //    {
+                //        Console.WriteLine(dr[colum]);
+                //    }
+
+                //}
+
+                string data = string.Empty;
+                StringBuilder sb = new StringBuilder();
+                foreach (DataRow dataRow in dt.Rows)
+                {
+                    foreach (var item in dataRow.ItemArray)
+                    {
+                        //Console.WriteLine(item);
+                        sb.Append(item);
+                        sb.Append(" | ");
+
+                    }
+                    sb.AppendLine();
+                }
+                data = sb.ToString();
+                Console.WriteLine(data);
+                /**/
+
 
                 // Execute the command.  
-                int ejecucion = insertCommand.ExecuteNonQuery();
+                //int ejecucion = insertCommand.ExecuteNonQuery();
 
-                Console.WriteLine("Cantidad registros insertados: " + ejecucion);
+                //Console.WriteLine("Cantidad registros insertados: " + ejecucion);
+                conecctionTest.CerrarConexion();
+
+                
 
             }
             catch (Exception ex)
